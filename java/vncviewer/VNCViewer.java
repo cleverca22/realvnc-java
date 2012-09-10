@@ -150,7 +150,7 @@ public class VNCViewer extends java.applet.Applet implements Runnable
     try {
       cc = new CConn(this);
       if (cc.init(null, vncServerName.getValue(),
-                  alwaysShowServerDialog.getValue())) {
+                  alwaysShowServerDialog.getValue(),defaultPassword.getValue())) {
         while (true)
           cc.processMsg();
       }
@@ -217,6 +217,7 @@ public class VNCViewer extends java.applet.Applet implements Runnable
   = new rfb.IntParameter("Port",
                          "The VNC server's port number, assuming it is on "+
                          "the host from which the applet was downloaded", 0);
+  rfb.StringParameter defaultPassword = new rfb.StringParameter("defaultPassword","the default password",null);
 
   Thread thread;
   boolean applet, firstApplet;

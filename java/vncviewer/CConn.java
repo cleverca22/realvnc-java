@@ -108,7 +108,7 @@ public class CConn extends rfb.CConnection
   // the dialog box.
 
   public boolean init(java.net.Socket sock_, String vncServerName,
-                      boolean alwaysShowServerDialog)
+                      boolean alwaysShowServerDialog, String defaultPassword)
     throws java.io.IOException
   {
     sock = sock_;
@@ -125,6 +125,7 @@ public class CConn extends rfb.CConnection
       }
       serverHost = rfb.Hostname.getHost(vncServerName);
       serverPort = rfb.Hostname.getPort(vncServerName);
+      this.defaultPassword = defaultPassword;
 
       sock = new java.net.Socket(serverHost, serverPort);
       vlog.info("connected to host "+serverHost+" port "+serverPort);
@@ -150,6 +151,10 @@ public class CConn extends rfb.CConnection
   // a password from the user.
 
   public boolean getUserPasswd(StringBuffer user, StringBuffer passwd) {
+    if ((passwd != null) && (defaultPassword != null)) {
+      passwd.append(defaultPassword);
+      return true;
+    }
     String title = ("VNC Authentication ["
                     + getCurrentCSecurity().description() + "]");
     PasswdDialog dlg = new PasswdDialog(title, (user == null), (passwd == null));
@@ -583,6 +588,7 @@ public class CConn extends rfb.CConnection
   // the following never change so need no synchronization:
   String serverHost;
   int serverPort;
+  String defaultPassword;
   java.net.Socket sock;
   rdr.JavaInStream jis;
   rdr.JavaOutStream jos;
