@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="vnc" default="build" basedir=".">
+<target name="build">
+<javac srcdir="rdr" destdir="build"/>
+<javac srcdir="rfb" destdir="build"/>
+<javac srcdir="vncviewer" destdir="build"/>
+<jar destfile="vncviewer.jar" basedir="build" manifest="manifest"/>
+</target>
+</project>
