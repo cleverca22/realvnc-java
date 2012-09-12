@@ -30,6 +30,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Label;
+import netscape.javascript.JSObject;
 
 public class VNCViewer extends java.applet.Applet implements Runnable
 {
@@ -165,9 +166,16 @@ public class VNCViewer extends java.applet.Applet implements Runnable
     }
     if (cc != null) cc.removeWindow();
     nViewers--;
+    informJS();
     if (!applet && nViewers == 0) {
       System.exit(0);
     }
+  }
+  private void informJS() {
+    vlog.info("calling js");
+    JSObject window = JSObject.getWindow(this);
+    window.call("viewerClosed",null);
+    vlog.info("done");
   }
 
   rfb.BoolParameter fastCopyRect
