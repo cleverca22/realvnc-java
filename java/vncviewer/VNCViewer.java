@@ -172,10 +172,13 @@ public class VNCViewer extends java.applet.Applet implements Runnable
     }
   }
   private void informJS() {
-    vlog.info("calling js");
-    JSObject window = JSObject.getWindow(this);
-    window.call("viewerClosed",null);
-    vlog.info("done");
+    try {
+      vlog.info("calling js");
+      JSObject window = JSObject.getWindow(this);
+      window.call("viewerClosed",null);
+      vlog.info("done");
+    } catch (NoClassDefFoundError e) {
+    }
   }
 
   rfb.BoolParameter fastCopyRect
