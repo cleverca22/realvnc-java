@@ -40,6 +40,7 @@ class DesktopWindow extends Canvas implements Runnable {
 
     cursor = new rfb.Cursor();
     cursorBacking = new rfb.ManagedPixelBuffer();
+    this.setFocusTraversalKeysEnabled(false);
   }
 
   // initGraphics() is needed because for some reason you can't call
@@ -240,6 +241,7 @@ class DesktopWindow extends Canvas implements Runnable {
   // and pointer events with other protocol messages.
 
   public boolean handleEvent(Event event) {
+    vlog.debug("handleEvent id "+event.id);
     switch (event.id) {
     case Event.GOT_FOCUS:
       checkClipboard();
