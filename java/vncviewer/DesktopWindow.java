@@ -247,6 +247,7 @@ class DesktopWindow extends Canvas implements Runnable {
       checkClipboard();
       break;
     case Event.MOUSE_MOVE:
+      this.requestFocus();
     case Event.MOUSE_DRAG:
       if (!cc.viewer.viewOnly.getValue())
         cc.writePointerEvent(event);
