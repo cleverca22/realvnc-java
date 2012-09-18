@@ -25,10 +25,11 @@
 
 package vncviewer;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 
-class DesktopWindow extends Canvas implements Runnable {
+class DesktopWindow extends Canvas implements Runnable,MouseWheelListener,MouseListener,MouseMotionListener,KeyListener {
 
   ////////////////////////////////////////////////////////////////////
   // The following methods are all called from the RFB thread
@@ -41,6 +42,10 @@ class DesktopWindow extends Canvas implements Runnable {
     cursor = new rfb.Cursor();
     cursorBacking = new rfb.ManagedPixelBuffer();
     this.setFocusTraversalKeysEnabled(false);
+    this.addMouseWheelListener(this);
+    this.addMouseListener(this);
+    this.addMouseMotionListener(this);
+    this.addKeyListener(this);
   }
 
   // initGraphics() is needed because for some reason you can't call
@@ -239,7 +244,30 @@ class DesktopWindow extends Canvas implements Runnable {
   // handleEvent().  Called by the GUI thread and calls on to CConn as
   // appropriate.  CConn is responsible for synchronizing the writing of key
   // and pointer events with other protocol messages.
-
+  public void mouseDragged(MouseEvent e) {
+    mouseMoved(e);
+  }
+  public void mouseMoved(MouseEvent e) {
+      if (!cc.viewer.viewOnly.getValue())
+        cc.writePointerEvent(e);
+      // - If local cursor rendering is enabled then use it
+      synchronized (this) {
+        if (cursorAvailable) {
+          // - Render the cursor!
+          if (e.getX() != cursorPosX || e.getY() != cursorPosY) {
+            hideLocalCursor();
+            if (e.getX() >= 0 && e.getX() < im.width() &&
+                e.getY() >= 0 && e.getY() < im.height()) {
+              cursorPosX = e.getX();
+              cursorPosY = e.getY();
+              showLocalCursor();
+            }
+          }
+        }
+      }
+      lastX = e.getX();
+      lastY = e.getY();
+  }
   public boolean handleEvent(Event event) {
     vlog.debug("handleEvent id "+event.id);
     switch (event.id) {
@@ -249,33 +277,6 @@ class DesktopWindow extends Canvas implements Runnable {
     case Event.MOUSE_MOVE:
       this.requestFocus();
     case Event.MOUSE_DRAG:
-      if (!cc.viewer.viewOnly.getValue())
-        cc.writePointerEvent(event);
-      // - If local cursor rendering is enabled then use it
-      synchronized (this) {
-        if (cursorAvailable) {
-          // - Render the cursor!
-          if (event.x != cursorPosX || event.y != cursorPosY) {
-            hideLocalCursor();
-            if (event.x >= 0 && event.x < im.width() &&
-                event.y >= 0 && event.y < im.height()) {
-              cursorPosX = event.x;
-              cursorPosY = event.y;
-              showLocalCursor();
-            }
-          }
-        }
-      }
-      lastX = event.x;
-      lastY = event.y;
-      break;
-
-    case Event.MOUSE_DOWN:
-    case Event.MOUSE_UP:
-      if (!cc.viewer.viewOnly.getValue())
-        cc.writePointerEvent(event);
-      lastX = event.x;
-      lastY = event.y;
       break;
 
     case Event.KEY_ACTION:
@@ -292,12 +293,32 @@ class DesktopWindow extends Canvas implements Runnable {
       // event and a release event, but the key fields will be different.
       // Without intimate knowledge of the keyboard layout being used, there's
       // no way you can correlate the two events. ]
-      if (!cc.viewer.viewOnly.getValue())
-        cc.writeKeyEvent(event);
-        break;
     }
 
     return super.handleEvent(event);
+  }
+  public void keyReleased(KeyEvent e) {
+    vlog.debug("keyReleased "+e.getID());
+  }
+  public void keyPressed(KeyEvent e) {
+    if (!cc.viewer.viewOnly.getValue()) cc.writeKeyEvent(e);
+  }
+  public void keyTyped(KeyEvent e) {}
+  public void mousePressed(MouseEvent e) {
+    if (!cc.viewer.viewOnly.getValue())cc.writePointerEvent(e);
+    lastX = e.getX();
+    lastY = e.getY();
+  }
+  public void mouseReleased(MouseEvent e) {
+    if (!cc.viewer.viewOnly.getValue())cc.writePointerEvent(e);
+    lastX = e.getX();
+    lastY = e.getY();
+  }
+  public void mouseClicked(MouseEvent e) {}
+  public void mouseEntered(MouseEvent e) {}
+  public void mouseExited(MouseEvent e) {}
+  public void mouseWheelMoved(MouseWheelEvent e) {
+    vlog.debug("id "+e.getID());
   }
 
 

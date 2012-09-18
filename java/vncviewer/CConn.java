@@ -33,6 +33,7 @@ package vncviewer;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.*;
 import java.awt.Event;
 import java.awt.Frame;
 import java.awt.ScrollPane;
@@ -461,114 +462,118 @@ public class CConn extends rfb.CConnection
     writer().writeKeyEvent(keysym, down);
   }
 
-  synchronized public void writeKeyEvent(Event ev) {
-    if (ev.id != Event.KEY_PRESS && ev.id != Event.KEY_ACTION)
+  synchronized public void writeKeyEvent(KeyEvent ev) {
+    if (ev.getID() != KeyEvent.KEY_PRESSED && !ev.isActionKey())
       return;
 
     int keysym;
 
-    if (ev.id == Event.KEY_PRESS) {
-      vlog.debug("key press "+ev.key);
-      if (ev.key < 32) {
+    if (ev.getID() == KeyEvent.KEY_PRESSED) {
+      vlog.debug("key press "+ev.getKeyCode());
+      if (ev.getKeyCode() < 32) {
         // if the ctrl modifier key is down, send the equivalent ASCII since we
         // will send the ctrl modifier anyway
 
-        if ((ev.modifiers & Event.CTRL_MASK) != 0) {
-          keysym = ev.key + 96;
+        if ((ev.getModifiers() & KeyEvent.CTRL_DOWN_MASK) != 0) {
+          keysym = ev.getKeyCode() + 96;
           if (keysym == 127) keysym = 95;
         } else {
-          switch (ev.key) {
-          case Event.BACK_SPACE: keysym = rfb.Keysyms.BackSpace; break;
-          case Event.TAB:        keysym = rfb.Keysyms.Tab; break;
-          case Event.ENTER:      keysym = rfb.Keysyms.Return; break;
-          case Event.ESCAPE:     keysym = rfb.Keysyms.Escape; break;
+          switch (ev.getKeyCode()) {
+          case KeyEvent.VK_BACK_SPACE: keysym = rfb.Keysyms.BackSpace; break;
+          case KeyEvent.VK_TAB:        keysym = rfb.Keysyms.Tab; break;
+          case KeyEvent.VK_ENTER:      keysym = rfb.Keysyms.Return; break;
+          case KeyEvent.VK_ESCAPE:     keysym = rfb.Keysyms.Escape; break;
           default: return;
           }
         }
 
-      } else if (ev.key == 127) {
+      } else if (ev.getKeyCode() == KeyEvent.VK_DELETE) {
         keysym = rfb.Keysyms.Delete;
 
       } else {
-        keysym = rfb.UnicodeToKeysym.translate(ev.key);
+        keysym = rfb.UnicodeToKeysym.translate(ev.getKeyCode());
         if (keysym == -1)
           return;
       }
 
     } else {
       // KEY_ACTION
-      vlog.debug("key action "+ev.key);
-      switch (ev.key) {
-      case Event.HOME:         keysym = rfb.Keysyms.Home; break;
-      case Event.END:          keysym = rfb.Keysyms.End; break;
-      case Event.PGUP:         keysym = rfb.Keysyms.Page_Up; break;
-      case Event.PGDN:         keysym = rfb.Keysyms.Page_Down; break;
-      case Event.UP:           keysym = rfb.Keysyms.Up; break;
-      case Event.DOWN:         keysym = rfb.Keysyms.Down; break;
-      case Event.LEFT:         keysym = rfb.Keysyms.Left; break;
-      case Event.RIGHT:        keysym = rfb.Keysyms.Right; break;
-      case Event.F1:           keysym = rfb.Keysyms.F1; break;
-      case Event.F2:           keysym = rfb.Keysyms.F2; break;
-      case Event.F3:           keysym = rfb.Keysyms.F3; break;
-      case Event.F4:           keysym = rfb.Keysyms.F4; break;
-      case Event.F5:           keysym = rfb.Keysyms.F5; break;
-      case Event.F6:           keysym = rfb.Keysyms.F6; break;
-      case Event.F7:           keysym = rfb.Keysyms.F7; break;
-      case Event.F8:           keysym = rfb.Keysyms.F8; break;
-      case Event.F9:           keysym = rfb.Keysyms.F9; break;
-      case Event.F10:          keysym = rfb.Keysyms.F10; break;
-      case Event.F11:          keysym = rfb.Keysyms.F11; break;
-      case Event.F12:          keysym = rfb.Keysyms.F12; break;
-      case Event.PRINT_SCREEN: keysym = rfb.Keysyms.Print; break;
-      case Event.PAUSE:        keysym = rfb.Keysyms.Pause; break;
-      case Event.INSERT:       keysym = rfb.Keysyms.Insert; break;
+      vlog.debug("key action "+ev.getKeyCode());
+      switch (ev.getKeyCode()) {
+      case KeyEvent.VK_HOME:         keysym = rfb.Keysyms.Home; break;
+      case KeyEvent.VK_END:          keysym = rfb.Keysyms.End; break;
+      case KeyEvent.VK_PAGE_UP:      keysym = rfb.Keysyms.Page_Up; break;
+      case KeyEvent.VK_PAGE_DOWN:    keysym = rfb.Keysyms.Page_Down; break;
+      case KeyEvent.VK_UP:           keysym = rfb.Keysyms.Up; break;
+      case KeyEvent.VK_DOWN:         keysym = rfb.Keysyms.Down; break;
+      case KeyEvent.VK_LEFT:         keysym = rfb.Keysyms.Left; break;
+      case KeyEvent.VK_RIGHT:        keysym = rfb.Keysyms.Right; break;
+      case KeyEvent.VK_F1:           keysym = rfb.Keysyms.F1; break;
+      case KeyEvent.VK_F2:           keysym = rfb.Keysyms.F2; break;
+      case KeyEvent.VK_F3:           keysym = rfb.Keysyms.F3; break;
+      case KeyEvent.VK_F4:           keysym = rfb.Keysyms.F4; break;
+      case KeyEvent.VK_F5:           keysym = rfb.Keysyms.F5; break;
+      case KeyEvent.VK_F6:           keysym = rfb.Keysyms.F6; break;
+      case KeyEvent.VK_F7:           keysym = rfb.Keysyms.F7; break;
+      case KeyEvent.VK_F8:           keysym = rfb.Keysyms.F8; break;
+      case KeyEvent.VK_F9:           keysym = rfb.Keysyms.F9; break;
+      case KeyEvent.VK_F10:          keysym = rfb.Keysyms.F10; break;
+      case KeyEvent.VK_F11:          keysym = rfb.Keysyms.F11; break;
+      case KeyEvent.VK_F12:          keysym = rfb.Keysyms.F12; break;
+      case KeyEvent.VK_PRINTSCREEN:  keysym = rfb.Keysyms.Print; break;
+      case KeyEvent.VK_PAUSE:        keysym = rfb.Keysyms.Pause; break;
+      case KeyEvent.VK_INSERT:       keysym = rfb.Keysyms.Insert; break;
       default: return;
       }
     }
 
-    writeModifiers(ev.modifiers);
+    writeModifiers(ev.getModifiers());
     writeKeyEvent(keysym, true);
     writeKeyEvent(keysym, false);
     writeModifiers(0);
   }
 
 
-  synchronized public void writePointerEvent(Event ev) {
+  synchronized public void writePointerEvent(MouseEvent ev) {
     if (state() != RFBSTATE_NORMAL) return;
 
-    switch (ev.id) {
-    case Event.MOUSE_DOWN:
+    switch (ev.getID()) {
+    case MouseEvent.MOUSE_PRESSED:
       buttonMask = 1;
-      if ((ev.modifiers & Event.ALT_MASK) != 0) buttonMask = 2;
-      if ((ev.modifiers & Event.META_MASK) != 0) buttonMask = 4;
+      if (ev.getButton() == MouseEvent.BUTTON2) buttonMask = 2;
+      if (ev.getButton() == MouseEvent.BUTTON3) buttonMask = 4;
       break;
-    case Event.MOUSE_UP:
+    case MouseEvent.MOUSE_RELEASED:
       buttonMask = 0;
       break;
     }
 
-    writeModifiers(ev.modifiers & ~Event.ALT_MASK & ~Event.META_MASK);
+    writeModifiers(ev.getModifiers() & ~InputEvent.ALT_DOWN_MASK & ~InputEvent.META_DOWN_MASK);
 
-    if (ev.x < 0) ev.x = 0;
-    if (ev.x > cp.width-1) ev.x = cp.width-1;
-    if (ev.y < 0) ev.y = 0;
-    if (ev.y > cp.height-1) ev.y = cp.height-1;
+    int x,y;
+    x = ev.getX();
+    y = ev.getY();
 
-    writer().writePointerEvent(ev.x, ev.y, buttonMask);
+    if (x < 0) x = 0;
+    if (x > cp.width-1) x = cp.width-1;
+    if (y < 0) y = 0;
+    if (y > cp.height-1) y = cp.height-1;
+
+    writer().writePointerEvent(x, y, buttonMask);
 
     if (buttonMask == 0) writeModifiers(0);
   }
 
 
-  void writeModifiers(int m) {
-    if ((m & Event.SHIFT_MASK) != (pressedModifiers & Event.SHIFT_MASK))
-      writeKeyEvent(rfb.Keysyms.Shift_L, (m & Event.SHIFT_MASK) != 0);
-    if ((m & Event.CTRL_MASK) != (pressedModifiers & Event.CTRL_MASK))
-      writeKeyEvent(rfb.Keysyms.Control_L, (m & Event.CTRL_MASK) != 0);
-    if ((m & Event.ALT_MASK) != (pressedModifiers & Event.ALT_MASK))
-      writeKeyEvent(rfb.Keysyms.Alt_L, (m & Event.ALT_MASK) != 0);
-    if ((m & Event.META_MASK) != (pressedModifiers & Event.META_MASK))
-      writeKeyEvent(rfb.Keysyms.Meta_L, (m & Event.META_MASK) != 0);
+  void writeModifiers(int m) { // FIXME, double-check against new event
+    if ((m & KeyEvent.SHIFT_DOWN_MASK) != (pressedModifiers & KeyEvent.SHIFT_DOWN_MASK))
+      writeKeyEvent(rfb.Keysyms.Shift_L, (m & KeyEvent.SHIFT_DOWN_MASK) != 0);
+    if ((m & KeyEvent.CTRL_DOWN_MASK) != (pressedModifiers & KeyEvent.CTRL_DOWN_MASK))
+      writeKeyEvent(rfb.Keysyms.Control_L, (m & KeyEvent.CTRL_DOWN_MASK) != 0);
+    if ((m & KeyEvent.ALT_DOWN_MASK) != (pressedModifiers & KeyEvent.ALT_DOWN_MASK))
+      writeKeyEvent(rfb.Keysyms.Alt_L, (m & KeyEvent.ALT_DOWN_MASK) != 0);
+    if ((m & KeyEvent.META_DOWN_MASK) != (pressedModifiers & KeyEvent.META_DOWN_MASK))
+      writeKeyEvent(rfb.Keysyms.Meta_L, (m & KeyEvent.META_DOWN_MASK) != 0);
     pressedModifiers = m;
   }
 
